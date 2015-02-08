@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>DF64E822-7A53-4C97-967D-5B1D2CC7DD53</string>
+	<key>IDESourceControlProjectName</key>
+	<string>lightblue_bean_control</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>A0CA26E663754AD0B69B2B5C8BD2790B4E47A6CF</key>
+		<string>https://github.com/sulph68/lightblue-bean-lacie-power.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>lightblue_bean_control/lightblue_bean_control.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>A0CA26E663754AD0B69B2B5C8BD2790B4E47A6CF</key>
+		<string>../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/sulph68/lightblue-bean-lacie-power.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>A0CA26E663754AD0B69B2B5C8BD2790B4E47A6CF</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>A0CA26E663754AD0B69B2B5C8BD2790B4E47A6CF</string>
+			<key>IDESourceControlWCCName</key>
+			<string>lightblue-bean-lacie-power</string>
+		</dict>
+	</array>
+</dict>
+</plist>
