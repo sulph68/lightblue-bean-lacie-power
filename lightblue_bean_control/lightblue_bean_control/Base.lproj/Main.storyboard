@@ -193,7 +193,10 @@
                         <outlet property="ambientTemp" destination="JVE-4i-YJe" id="Ek3-uj-Ou1"/>
                         <outlet property="batteryLevel" destination="wzE-4A-VRI" id="JIO-7G-v5y"/>
                         <outlet property="beanLabel" destination="zvj-Au-IQh" id="CEY-uF-Cem"/>
+                        <outlet property="flashPress" destination="RxO-95-UJ2" id="7W6-RT-2i0"/>
                         <outlet property="lastDiscovered" destination="x16-Jg-aDC" id="0Rd-6E-k7B"/>
+                        <outlet property="longPress" destination="hwa-rF-VMA" id="u0d-mG-Q9T"/>
+                        <outlet property="shortPress" destination="TuZ-yg-cqd" id="TNu-lX-OB0"/>
                         <outlet property="statusDrawer" destination="tWf-8I-4GY" id="yXr-xZ-uh3"/>
                         <outlet property="statusLabel" destination="mdD-X2-Diz" id="NdY-Ke-enj"/>
                     </connections>

@@ -27,6 +27,11 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
     @IBOutlet weak var ambientTemp: UILabel!
     @IBOutlet weak var lastDiscovered: UILabel!
     
+    @IBOutlet weak var shortPress: UIButton!
+    @IBOutlet weak var longPress: UIButton!
+    @IBOutlet weak var flashPress: UIButton!
+    
+    
     let MAXVOLT: Float = 3.53
     let MINVOLT: Float = 1.95
     
@@ -38,6 +43,10 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
         var newBounds = CGRect(x: 0, y: 40, width: UIScreen.mainScreen().bounds.size.width, height: 40)
         self.statusDrawer.bounds = newBounds
         self.statusDrawer.backgroundColor = UIColor.whiteColor()
+        
+        shortPress.enabled = false
+        longPress.enabled = false
+        flashPress.enabled = false
         
         beanManager.delegate = self;
         
@@ -92,11 +101,18 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
         connectedBean!.delegate = self
         blink(1, color: UIColor.greenColor())
         populateInfo()
+        shortPress.enabled = true
+        longPress.enabled = true
+        flashPress.enabled = true
     }
     
     func BeanManager(beanManager: PTDBeanManager!, didDisconnectBean bean: PTDBean!, error: NSError!) {
         printStatusLabel("Disconnected from Bean \(bean.name)")
         connectedBean = nil
+        
+        shortPress.enabled = false
+        longPress.enabled = false
+        flashPress.enabled = false
         
         var connectError: NSError?
         beanManager.connectToBean(bean, error: &connectError)
@@ -110,7 +126,7 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
             printStatusLabel(connectedBean!.name)
             populateInfo()
         } else {
-            printStatusLabel("No detected bean")
+            printStatusLabel("No connected Bean!")
             var scanError: NSError?
             beanManager.startScanningForBeans_error(&scanError)
             blink(1, color: UIColor.yellowColor())
@@ -127,6 +143,8 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
             NSLog("Sending short press")
             blink(2, color: UIColor.redColor())
             connectedBean!.sendSerialString("short")
+        } else {
+            printStatusLabel("No connected Bean!")
         }
     }
     
@@ -135,12 +153,16 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
             NSLog("Sending long press")
             blink(10, color: UIColor.redColor())
             connectedBean!.sendSerialString("long")
+        } else {
+            printStatusLabel("No connected Bean!")
         }
     }
     
     @IBAction func blinkLED(sender: AnyObject) {
         if (connectedBean != nil) {
             blink(0.3, color: UIColor.redColor())
+        } else {
+            printStatusLabel("No connected Bean!")
         }
     }
     
@@ -233,6 +255,13 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
         } else {
             return 0
         }
+    }
+    
+    func showAlert(message: String) {
+        let alert = UIAlertController(title: "Bean Alert", message: message, preferredStyle: UIAlertControllerStyle.Alert)
+        let okResponse = UIAlertAction(title: "OK", style: UIAlertActionStyle.Default, handler: nil)
+        alert.addAction(okResponse)
+        self.presentViewController(alert, animated: true, completion: nil)
     }
 }
 
