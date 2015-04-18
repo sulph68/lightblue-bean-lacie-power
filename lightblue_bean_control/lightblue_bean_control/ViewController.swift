@@ -8,21 +8,23 @@
 
 import UIKit
 
-class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate {
+class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate, UIPickerViewDataSource, UIPickerViewDelegate {
 
-    let beanManager = PTDBeanManager()
+    var beanManager = PTDBeanManager()
     var connectedBean: PTDBean?
     
     // Define the name of your LightBlue Bean
-    let beanName = "RemoteBean"
+    var beanName = ""
     
     var statusTimer: NSTimer?
+    var connectTimer: NSTimer?
     
     @IBOutlet weak var statusDrawer: UIView!
     @IBOutlet weak var statusLabel: UILabel!
     
     @IBOutlet weak var beanLabel: UILabel!
     @IBOutlet weak var batteryLevel: UILabel!
+    @IBOutlet weak var beanPicker: UIPickerView!
     
     @IBOutlet weak var ambientTemp: UILabel!
     @IBOutlet weak var lastDiscovered: UILabel!
@@ -44,29 +46,68 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
         self.statusDrawer.bounds = newBounds
         self.statusDrawer.backgroundColor = UIColor.whiteColor()
         
+        if (beanName == "") {
+            beanName = "RemoteBean"
+        }
+        
         shortPress.enabled = false
         longPress.enabled = false
         flashPress.enabled = false
         
-        beanManager.delegate = self;
+        beanManager.delegate = self
+        beanPicker.delegate = self
         
+        self.beanLabel.text = beanName
+        self.beanLabel.textColor = UIColor.redColor()
     }
     
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    func numberOfComponentsInPickerView(pickerView: UIPickerView) -> Int {
+        return 1
+    }
 
+    func pickerView(pickerView: UIPickerView, numberOfRowsInComponent component: Int) -> Int {
+        return 2
+    }
+    
+    func pickerView(pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String! {
+        var name: NSString?
+        if (row == 0) {
+            name = "RemoteBean"
+        } else if (row == 1) {
+            name = "RemotePlus"
+        }
+        return name
+    }
+    
+    func pickerView(pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
+        if (row == 0) {
+            beanName = "RemoteBean"
+        } else if (row == 1) {
+            beanName = "RemotePlus"
+        }
+        self.beanLabel.text = beanName
+        // dealloc the old bean
+        var dcError: NSError?
+        if (connectedBean != nil) {
+            self.beanManager.disconnectBean(connectedBean!, error: &dcError)
+            connectedBean = nil
+        }
+        if (dcError != nil) {
+            printStatusLabel("Error disconnecting \(beanName)")
+        } else {
+            // Perform a rescan on a reselection of picker view
+            startScanBeans()
+        }
+    }
+    
     func beanManagerDidUpdateState(beanManager: PTDBeanManager!) {
         if (beanManager.state == BeanManagerState.PoweredOn) {
-            var scanError: NSError?
-            beanManager.startScanningForBeans_error(&scanError)
-            blink(1, color: UIColor.yellowColor())
-            if (scanError != nil) {
-                printStatusLabel("Error starting scan")
-            } else {
-                printStatusLabel("Lightblue Bean scan started")
-            }
+            startScanBeans()
         } else if (beanManager.state == BeanManagerState.PoweredOff) {
             printStatusLabel("Device Powered off")
         } else if (beanManager.state == BeanManagerState.Unauthorized) {
@@ -90,6 +131,7 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
                 beanManager.connectToBean(bean, error: &connectError)
                 if (connectError == nil) {
                     printStatusLabel("Connecting to Bean: \(bean.name)")
+                    beanManager.stopScanningForBeans_error(&connectError)
                 }
             }
         }
@@ -113,28 +155,52 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
         shortPress.enabled = false
         longPress.enabled = false
         flashPress.enabled = false
-        
-        var connectError: NSError?
-        beanManager.connectToBean(bean, error: &connectError)
-        if (connectError == nil) {
-            printStatusLabel("Connecting to Bean: \(bean.name)")
+    }
+    
+    func startScanBeans() {
+        var scanError: NSError?
+        beanManager.startScanningForBeans_error(&scanError)
+        blink(1, color: UIColor.yellowColor())
+        if (scanError != nil) {
+            printStatusLabel("Error starting scan")
+        } else {
+            printStatusLabel("Re-scanning for \(beanName)")
+
+            let selector: Selector = "stopScanBeans"
+            if (self.connectTimer != nil) {
+                self.connectTimer!.invalidate()
+            }
+            self.connectTimer = NSTimer.scheduledTimerWithTimeInterval(NSTimeInterval(120.0), target: self, selector: selector, userInfo: nil, repeats: false)
+            
         }
     }
     
+    func stopScanBeans() {
+        self.beanLabel.text = beanName
+        if (connectedBean? == nil) {
+            showAlert("Cannot find \(beanName) after 2 minutes. Refresh to try again.")
+            self.beanLabel.textColor = UIColor.redColor()
+        }
+        var dcError: NSError?
+        beanManager.stopScanningForBeans_error(&dcError)
+    }
+    
+    
     @IBAction func showBeanName(sender: AnyObject) {
-        if (connectedBean != nil) {
+        // Perform a rescan on a reselection of picker view
+        var scanError: NSError?
+        NSLog("Current Selected: \(beanPicker.selectedRowInComponent(0))")
+        if (beanPicker.selectedRowInComponent(0) == 0) {
+            beanName = "RemoteBean"
+        } else {
+            beanName = "RemotePlus"
+        }
+        if (connectedBean != nil && connectedBean!.name == beanName) {
             printStatusLabel(connectedBean!.name)
             populateInfo()
         } else {
             printStatusLabel("No connected Bean!")
-            var scanError: NSError?
-            beanManager.startScanningForBeans_error(&scanError)
-            blink(1, color: UIColor.yellowColor())
-            if (scanError != nil) {
-                printStatusLabel("Error starting scan")
-            } else {
-                printStatusLabel("Bean Re-scanning")
-            }
+            startScanBeans()
         }
     }
     
@@ -169,7 +235,8 @@ class ViewController: UIViewController, PTDBeanManagerDelegate, PTDBeanDelegate 
     func populateInfo() {
         self.beanLabel.text = beanName
         
-        if (connectedBean != nil) {
+        if (connectedBean != nil && connectedBean!.name == beanName) {
+            
             blink(0.3, color: UIColor.blueColor())
             self.beanLabel.textColor = UIColor.blackColor()
             
